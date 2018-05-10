@@ -1,0 +1,4 @@
+
+DEBUG = False
+
+ELASTICSEARCH_HOSTS = []
