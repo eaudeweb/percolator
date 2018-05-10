@@ -21,21 +21,18 @@ class BaseTagger:
         client: A `Elasticsearch` client.
 
     Attributes:
-
         query_doc_type: A `DocType`-based query document implementation.
-        index: The ElasticSearch index name.
         field_name: The name of content field on the query document.
     """
 
     query_doc_type = DocType
-    index = ''
     field_name = ''
 
     def __init__(self, client):
         self.client = client
 
     def get_search_query(self, content):
-        return Search(using=self.client, index=self.index).query(
+        return Search(using=self.client, index=self.query_doc_type._doc_type.index).query(
             'percolate', field='query', document={self.field_name: content}
         )
 

@@ -23,7 +23,6 @@ class SpeciesQueryDoc(DocType):
 class SpeciesTagger(BaseTagger):
 
     query_doc_type = SpeciesQueryDoc
-    index = INDEX
     field_name = 'content'
 
 
