@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 
 def get_env_var(var_name, default=None):
@@ -32,4 +33,9 @@ def split_env_var(var_name, sep=','):
 
 
 DEBUG = False
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = BASE_DIR.parent
+STATIC_DIR = ROOT_DIR / 'static'
+
 ELASTICSEARCH_HOSTS = split_env_var('ELASTICSEARCH_HOSTS')

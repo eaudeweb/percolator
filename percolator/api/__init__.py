@@ -8,4 +8,4 @@ components = [
     ElasticSearchClientComponent(hosts=settings.ELASTICSEARCH_HOSTS)
 ]
 
-app = App(routes=routes, components=components)
+app = App(routes=routes, components=components, static_dir=settings.STATIC_DIR)
