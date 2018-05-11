@@ -1,5 +1,5 @@
 import logging
-from elasticsearch_dsl import DocType, Search
+from elasticsearch_dsl import DocType, Search, Index
 from elasticsearch_dsl.query import Query
 
 log = logging.getLogger('percolator_search')
@@ -31,8 +31,12 @@ class BaseTagger:
     def __init__(self, client):
         self.client = client
 
+    @property
+    def index(self):
+        return self.query_doc_type._doc_type.index
+
     def get_search_query(self, content):
-        return Search(using=self.client, index=self.query_doc_type._doc_type.index).query(
+        return Search(using=self.client, index=self.index).query(
             'percolate', field='query', document={self.field_name: content}
         )
 
@@ -57,10 +61,13 @@ class BaseTagger:
             s = s.extra(min_score=min_score)
 
         if offset is not None and limit is not None:
+            offset, limit = int(offset), int(limit)
             s = s[offset:offset + limit]
         elif offset is not None:
+            offset = int(offset)
             s = s[int(offset):]
         elif limit is not None:
+            limit = int(limit)
             s = s[:limit]
 
         response = s.execute()
@@ -78,6 +85,10 @@ class BaseQueryIndexer:
     def __init__(self, client):
         self.client = client
         self.query_doc_type.init()  # Create the mappings
+
+    @property
+    def index(self):
+        return self.query_doc_type._doc_type.index
 
     @staticmethod
     def get_tags(tags_path):
@@ -100,7 +111,7 @@ class BaseQueryIndexer:
         """Prepares a query body dict that matches `term`."""
         return {'match': {self.field_name: term}}
 
-    def register_queries(self, tags_path):
+    def index_queries(self, tags_path):
         """Saves the tag names as query documents"""
         log.info('Registering queries')
         tags = self.get_tags(tags_path)
