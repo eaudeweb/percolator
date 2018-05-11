@@ -1,7 +1,7 @@
 import logging
 from elasticsearch_dsl import (Index, DocType, Text, Percolator, token_filter, analyzer)
 
-from .base import BaseTagger, BaseQueryIndexer
+from .base import BaseQueryIndexer
 
 
 log = logging.getLogger('percolator_search')
@@ -20,15 +20,10 @@ class SpeciesQueryDoc(DocType):
         doc_type = '_doc'
 
 
-class SpeciesTagger(BaseTagger):
-
-    query_doc_type = SpeciesQueryDoc
-    field_name = 'content'
-
-
 class SpeciesQueryIndexer(BaseQueryIndexer):
 
     query_doc_type = SpeciesQueryDoc
+    query_type = 'match'
     field_name = 'content'
 
     @staticmethod
@@ -51,7 +46,7 @@ class SpeciesQueryIndexer(BaseQueryIndexer):
         """
         return '_'.join(species.split(' '))
 
-    def synonyms(self, species):
+    def _synonyms(self, species):
         """
         Builds the synonym lists.
 
@@ -80,12 +75,12 @@ class SpeciesQueryIndexer(BaseQueryIndexer):
         (Re)Creates the index with synonyms, and saves the species names as query documents.
         """
         log.info('Registering queries')
-        species = self.get_tags(tags_path)
+        species = self._read_tags(tags_path)
 
         index = Index(self.index)
         index.doc_type(self.query_doc_type)
 
-        autophrase_syns, syns = self.synonyms(species)
+        autophrase_syns, syns = self._synonyms(species)
 
         autophrase_filter = token_filter(
             f'species_autophrase_syn', type='synonym', synonyms=autophrase_syns
@@ -98,12 +93,15 @@ class SpeciesQueryIndexer(BaseQueryIndexer):
         species_analyzer = analyzer(
             f'species_analyzer',
             tokenizer='standard',
-            filter=[autophrase_filter, syn_filter],
+            filter=[
+                autophrase_filter,
+                syn_filter
+            ],
         )
         index.analyzer(species_analyzer)
         index.delete(ignore=404)
         index.create()
 
         for s in species:
-            query_doc = self.query_doc_type(query=self.mk_query_body(s))
+            query_doc = self.query_doc_type(query=self._mk_query_body(s))
             query_doc.save()

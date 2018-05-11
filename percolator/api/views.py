@@ -1,5 +1,5 @@
 from apistar import http
-from ..search import SpeciesTagger
+from ..search import BaseTagger, SpeciesQueryIndexer
 from elasticsearch import Elasticsearch
 
 
@@ -10,10 +10,10 @@ def tag(
     min_score: http.QueryParam,
     es_client: Elasticsearch
 ) -> dict:
-    content = data.get('content')
-    tagger = SpeciesTagger(client=es_client)
+    tagger = BaseTagger(indexer=SpeciesQueryIndexer(client=es_client))
     tags = tagger.get_tags(
-        content=content, min_score=min_score, offset=offset, limit=limit
+        content=data.get('content'),
+        min_score=min_score, offset=offset, limit=limit
     )
     response = {t[0]: t[1] for t in tags}
     return response

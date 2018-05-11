@@ -13,29 +13,78 @@ class PercolateQuery(Query):
     name = 'percolate'
 
 
-class BaseTagger:
-    """
-    Base percolating search provider.
-
-    Args:
-        client: A `Elasticsearch` client.
-
-    Attributes:
-        query_doc_type: A `DocType`-based query document implementation.
-        field_name: The name of content field on the query document.
-    """
+class BaseQueryIndexer:
 
     query_doc_type = DocType
-    field_name = ''
+    query_type = 'match'
+    field_name = 'content'
 
     def __init__(self, client):
         self.client = client
+        self.query_doc_type.init()  # Create the mappings
 
     @property
     def index(self):
         return self.query_doc_type._doc_type.index
 
-    def get_search_query(self, content):
+    @staticmethod
+    def _read_tags(tags_path):
+        """
+        Reads tags from file at the provided path.
+        Returns:
+            A set of tag names.
+        """
+        log.info(f'Fetching tags from {tags_path}')
+        tags = set()
+        for line in open(tags_path, 'r').readlines():
+            t = line.strip().lower()
+            if t:
+                tags.add(t)
+
+        log.info(f'Read {len(tags)} unique tags')
+        return tags
+
+    def _mk_query_body(self, term):
+        """Prepares a query body dict that matches `term`."""
+        return {self.query_type: {self.field_name: term}}
+
+    def index_queries(self, tags_path):
+        """Saves the tag names as query documents"""
+        log.info('Registering queries')
+        tags = self._read_tags(tags_path)
+        for t in tags:
+            query_doc = self.query_doc_type(query=self._mk_query_body(t))
+            query_doc.save()
+
+
+class BaseTagger:
+    """
+    Base percolating search provider.
+
+    Args:
+        indexer: A `BaseQueryIndexer`-based instance.
+    """
+
+    def __init__(self, indexer):
+        self.indexer = indexer
+
+    @property
+    def client(self):
+        return self.indexer.client
+
+    @property
+    def index(self):
+        return self.indexer.index
+
+    @property
+    def field_name(self):
+        return self.indexer.field_name
+
+    @property
+    def query_type(self):
+        return self.indexer.query_type
+
+    def _search_query(self, content):
         return Search(using=self.client, index=self.index).query(
             'percolate', field='query', document={self.field_name: content}
         )
@@ -55,7 +104,7 @@ class BaseTagger:
             A list of (matched content, score) tuples.
         """
         log.info('Fetching tags ...')
-        s = self.get_search_query(content)
+        s = self._search_query(content)
 
         if min_score is not None:
             s = s.extra(min_score=min_score)
@@ -71,50 +120,11 @@ class BaseTagger:
             s = s[:limit]
 
         response = s.execute()
+        # Only return the matches and scores in hits
         return [
-            (getattr(hit.query.match, self.field_name), hit.meta.score)
+            (
+                getattr(getattr(hit.query, self.query_type), self.field_name),
+                hit.meta.score
+            )
             for hit in response
         ]
-
-
-class BaseQueryIndexer:
-
-    query_doc_type = DocType
-    field_name = 'content'
-
-    def __init__(self, client):
-        self.client = client
-        self.query_doc_type.init()  # Create the mappings
-
-    @property
-    def index(self):
-        return self.query_doc_type._doc_type.index
-
-    @staticmethod
-    def get_tags(tags_path):
-        """
-        Reads tags from file at the provided path.
-        Returns:
-            A set of tag names.
-        """
-        log.info(f'Fetching tags from {tags_path}')
-        tags = set()
-        for line in open(tags_path, 'r').readlines():
-            t = line.strip().lower()
-            if t:
-                tags.add(t)
-
-        log.info(f'Read {len(tags)} unique tags')
-        return tags
-
-    def mk_query_body(self, term):
-        """Prepares a query body dict that matches `term`."""
-        return {'match': {self.field_name: term}}
-
-    def index_queries(self, tags_path):
-        """Saves the tag names as query documents"""
-        log.info('Registering queries')
-        tags = self.get_tags(tags_path)
-        for t in tags:
-            query_doc = self.query_doc_type(query=self.mk_query_body(t))
-            query_doc.save()
