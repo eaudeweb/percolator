@@ -1,13 +1,10 @@
 import logging
-from elasticsearch_dsl import (Index, DocType, Text, Percolator, token_filter, analyzer)
+from elasticsearch_dsl import (Index, DocType, Text, Percolator, token_filter, analyzer, MetaField)
 
 from .base import BaseQueryIndexer
 
 
 log = logging.getLogger('percolator_search')
-
-
-INDEX = 'species_percolator'
 
 
 class SpeciesQueryDoc(DocType):
@@ -16,14 +13,13 @@ class SpeciesQueryDoc(DocType):
     content = Text()
 
     class Meta:
-        index = INDEX
         doc_type = '_doc'
 
 
 class SpeciesQueryIndexer(BaseQueryIndexer):
 
     query_doc_type = SpeciesQueryDoc
-    query_type = 'match'
+    query_type = 'match_phrase'
     field_name = 'content'
 
     @staticmethod
@@ -70,17 +66,15 @@ class SpeciesQueryIndexer(BaseQueryIndexer):
 
         return autophrase_syns, syns
 
-    def index_queries(self, tags_path):
-        """
-        (Re)Creates the index with synonyms, and saves the species names as query documents.
-        """
-        log.info('Registering queries')
-        species = self._read_tags(tags_path)
-
-        index = Index(self.index)
-        index.doc_type(self.query_doc_type)
-
+    def _analyzer(self, species, dump=True):
         autophrase_syns, syns = self._synonyms(species)
+
+        if dump:
+            with open('autophrase_syns.txt', 'w') as f:
+                f.writelines(l + '\n' for l in autophrase_syns)
+
+            with open('syns.txt', 'w') as f:
+                f.writelines(l + '\n' for l in syns)
 
         autophrase_filter = token_filter(
             f'species_autophrase_syn', type='synonym', synonyms=autophrase_syns
@@ -90,7 +84,7 @@ class SpeciesQueryIndexer(BaseQueryIndexer):
             f'species_syn', type='synonym', tokenizer='keyword', synonyms=syns
         )
 
-        species_analyzer = analyzer(
+        return analyzer(
             f'species_analyzer',
             tokenizer='standard',
             filter=[
@@ -98,10 +92,24 @@ class SpeciesQueryIndexer(BaseQueryIndexer):
                 syn_filter
             ],
         )
-        index.analyzer(species_analyzer)
+
+    def index_queries(self, tags_path):
+        """
+        (Re)Creates the index with synonyms, and saves the species names as query documents.
+        """
+        species = self._read_tags(tags_path)
+
+        index = Index(self.index)
+        index.doc_type(self.query_doc_type)
+
+        log.info('Building analyzer')
+        index.analyzer(self._analyzer(species))
+
+        log.info('(Re)Creating index')
         index.delete(ignore=404)
         index.create()
 
+        log.info('Registering queries')
         for s in species:
             query_doc = self.query_doc_type(query=self._mk_query_body(s))
             query_doc.save()
