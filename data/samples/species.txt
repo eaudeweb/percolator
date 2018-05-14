@@ -123,6 +123,11 @@ Felis manul
 Felis margarita
 Felis nigripes
 Felis silvestris
+Felis yagouaroundi
+Felis pardalis
+Felis wiedii
+Felis tigrina
+Felis geoffroyi
 Leopardus braccatus
 Leopardus colocolo
 Leopardus geoffroyi
