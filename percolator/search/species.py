@@ -1,8 +1,7 @@
 import logging
-from elasticsearch_dsl import (Index, DocType, Text, Percolator, token_filter, analyzer, MetaField)
+from elasticsearch_dsl import (Index, DocType, Text, Percolator, token_filter, analyzer)
 
 from .base import BaseQueryIndexer
-
 
 log = logging.getLogger('percolator_search')
 
@@ -10,7 +9,7 @@ log = logging.getLogger('percolator_search')
 class SpeciesQueryDoc(DocType):
     """Document type for percolating queries storage"""
     query = Percolator()
-    content = Text()
+    content = Text(analyzer='species_analyzer')
 
     class Meta:
         doc_type = '_doc'
@@ -86,7 +85,7 @@ class SpeciesQueryIndexer(BaseQueryIndexer):
 
         return analyzer(
             f'species_analyzer',
-            tokenizer='standard',
+            tokenizer='lowercase',
             filter=[
                 autophrase_filter,
                 syn_filter
