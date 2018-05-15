@@ -3,5 +3,5 @@ from .views import *
 
 
 routes = [
-    Route('/tag', method='POST', handler=tag),
+    Route('/extract/species', method='POST', handler=extract_species),
 ]
