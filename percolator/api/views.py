@@ -1,4 +1,6 @@
-from apistar import types, validators
+import requests
+from uuid import uuid4
+from apistar import types, validators, http
 from ..search import BaseTagger, SpeciesQueryIndexer
 from elasticsearch import Elasticsearch
 
@@ -32,6 +34,20 @@ class SpeciesExtractionParams(types.Type):
     )
 
 
+def get_species(es_client, content, min_score=None, constant_score=True, offset=None, limit=None):
+    indexer = SpeciesQueryIndexer(client=es_client, index=settings.ELASTICSEARCH_INDEX)
+    tagger = BaseTagger(indexer=indexer)
+    species = tagger.get_tags(
+        content=content,
+        min_score=min_score,
+        constant_score=constant_score,
+        offset=offset,
+        limit=limit
+    )
+
+    return species
+
+
 def extract_species(query: SpeciesExtractionParams, es_client: Elasticsearch) -> dict:
     """
     Extracts species mentions in the supplied text `content`.
@@ -39,14 +55,23 @@ def extract_species(query: SpeciesExtractionParams, es_client: Elasticsearch) ->
     Response: a list of species names or, if `constant_score` is `False`,
     a mapping of species names to relevance scores.
     """
-    indexer = SpeciesQueryIndexer(client=es_client, index=settings.ELASTICSEARCH_INDEX)
-    tagger = BaseTagger(indexer=indexer)
-    tags = tagger.get_tags(
+    return get_species(
+        es_client=es_client,
         content=query.content,
         min_score=query.min_score,
         constant_score=query.constant_score,
         offset=query.offset,
-        limit=query.limit,
+        limit=query.limit
     )
 
-    return tags
+
+def extract_species_from_file(request: http.Request, es_client: Elasticsearch) -> dict:
+    headers = {
+        'Accept': 'application/json',
+        'Content-Disposition': f'attachment; filename={uuid4()}',
+    }
+    response = requests.put(f'{settings.TIKA_URL}/rmeta/text', request.body, headers=headers, verify=False)
+    tika_data = response.json()
+    text_content = tika_data[0]['X-TIKA:content'].strip()
+    species = get_species(es_client=es_client, content=text_content)
+    return species
