@@ -102,3 +102,5 @@ ENV/
 
 autophrase_syns.txt
 syns.txt
+docker/percolator.env
+docker-compose.override.yml
