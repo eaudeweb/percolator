@@ -1,0 +1,57 @@
+Felis yagouaroundi
+Felis pardalis
+Felis wiedii
+Felis tigrina
+Felis geoffroyi
+Loxodonta africana
+Elephas maximus
+Antilocapra americana
+Addax nasomaculatus
+Ammotragus lervia
+Antilope cervicapra
+Bos gaurus
+Bos mutus
+Bos sauveli
+Boselaphus tragocamelus
+Bubalus arnee
+Bubalus depressicornis
+Bubalus mindorensis
+Bubalus quarlesi
+Budorcas taxicolor
+Capra caucasica
+Capra falconeri
+Capra hircus aegagrus
+Capra sibirica
+Capricornis milneedwardsii
+Capricornis rubidus
+Capricornis sumatraensis
+Capricornis thar
+Cephalophus brookei
+Cephalophus dorsalis
+Cephalophus jentinki
+Cephalophus ogilbyi
+Cephalophus silvicultor
+Cephalophus zebra
+Damaliscus pygargus pygargus
+Gazella bennettii
+Gazella cuvieri
+Gazella dorcas
+Gazella leptoceros
+Hippotragus niger variani
+Kobus leche
+Naemorhedus baileyi
+Naemorhedus caudatus
+Naemorhedus goral
+Naemorhedus griseus
+Nanger dama
+Oryx dammah
+Oryx leucoryx
+Ovis ammon
+Ovis ammon hodgsonii
+Ovis ammon nigrimontana
+Ovis aries
+Ovis aries ophion
+Ovis aries vignei
+Ovis canadensis
+Pantholops hodgsonii
+Philantomba monticola
