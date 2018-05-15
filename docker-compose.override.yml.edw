@@ -1,0 +1,22 @@
+version: '2'
+
+services:
+
+  elasticsearch:
+    labels:
+      io.rancher.scheduler.affinity:host_label_ne: frontend=yes
+
+  app:
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label_ne: frontend=yes
+
+  nginx:
+    labels:
+      io.rancher.scheduler.affinity:host_label_ne: frontend=yes
+
+volumes:
+  esdata:
+    driver: rancher-nfs
+  static-files:
+    driver: rancher-nfs

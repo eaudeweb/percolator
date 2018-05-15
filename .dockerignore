@@ -1,0 +1,9 @@
+*.egg-info/
+.DS_Store
+.idea
+autophrase_syns.txt
+syns.txt
+.env*
+.dockerignore
+docker-compose.*
+docker/
