@@ -13,7 +13,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - esdata:/usr/share/elasticsearch/data:rw
+      - esdata:/usr/share/elasticsearch/data
 
   app:
     image: eaudeweb/percolator
