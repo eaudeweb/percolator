@@ -2,10 +2,20 @@ import requests
 from uuid import uuid4
 from typing import Union
 from apistar import types, validators, http
-from ..search import BaseTagger, SpeciesQueryIndexer
+from ..search import TAG_DOMAINS
 from elasticsearch import Elasticsearch
 
 from percolator.conf import settings
+
+
+def list_tag_domains() -> dict:
+    """
+    Lists tag domains.
+
+    Returns:
+        dict mapping domain names to their descriptions.
+    """
+    return {k: v.description for k, v in TAG_DOMAINS.items()}
 
 
 class SpeciesExtractionParams(types.Type):
@@ -36,8 +46,9 @@ class SpeciesExtractionParams(types.Type):
 
 
 def get_species(es_client, content, min_score=None, constant_score=True, offset=None, limit=None):
-    indexer = SpeciesQueryIndexer(client=es_client, index=settings.ELASTICSEARCH_INDEX)
-    tagger = BaseTagger(indexer=indexer)
+    tag_domain = TAG_DOMAINS['speciesplus']
+    indexer = tag_domain.query_indexer(client=es_client, index=settings.ELASTICSEARCH_INDEX)
+    tagger = tag_domain.tagger(indexer=indexer)
     species = tagger.get_tags(
         content=content,
         min_score=min_score,
