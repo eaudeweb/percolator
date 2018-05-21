@@ -5,4 +5,5 @@ elasticsearch-dsl>=6.1.0,<7
 gunicorn>=19.8.1,<20
 meinheld>=0.6.1,<7
 requests>=2.18.4,<3
+Werkzeug>=0.14.1,<0.15
 whitenoise>=3.3.1,<4
