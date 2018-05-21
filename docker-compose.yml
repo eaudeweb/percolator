@@ -16,6 +16,9 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
 
+  tika:
+    image: logicalspark/docker-tikaserver
+
   app:
     image: eaudeweb/percolator
     env_file:
@@ -24,6 +27,7 @@ services:
       - static-files:/var/local/percolator/static
     depends_on:
       - elasticsearch
+      - tika
 
   nginx:
     image: nginx:latest

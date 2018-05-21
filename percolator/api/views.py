@@ -1,5 +1,6 @@
 import requests
 from uuid import uuid4
+from typing import Union
 from apistar import types, validators, http
 from ..search import BaseTagger, SpeciesQueryIndexer
 from elasticsearch import Elasticsearch
@@ -65,12 +66,19 @@ def extract_species(query: SpeciesExtractionParams, es_client: Elasticsearch) ->
     )
 
 
-def extract_species_from_file(request: http.Request, es_client: Elasticsearch) -> dict:
+def extract_species_from_file(request: http.Request, es_client: Elasticsearch) -> Union[http.Response, dict]:
     headers = {
         'Accept': 'application/json',
         'Content-Disposition': f'attachment; filename={uuid4()}',
     }
-    response = requests.put(f'{settings.TIKA_URL}/rmeta/text', request.body, headers=headers, verify=False)
+    try:
+        response = requests.put(
+            f'{settings.TIKA_URL}/rmeta/text',
+            data=request.body, headers=headers,
+            verify=False, timeout=settings.TIKA_TIMEOUT
+        )
+    except requests.exceptions.Timeout:
+        return http.Response({'error': 'text extraction timed out'}, status_code=500)
     tika_data = response.json()
     text_content = tika_data[0]['X-TIKA:content'].strip()
     species = get_species(es_client=es_client, content=text_content)

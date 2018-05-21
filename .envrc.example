@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+export PYTHONPATH=`pwd`
 export PERCOLATOR_SETTINGS_MODULE='percolator.settings.local'
 export ELASTICSEARCH_HOSTS='localhost'
 export ELASTICSEARCH_INDEX='species_percolator'
+export TIKA_HOST='localhost'
+export TIKA_TIMEOUT=5.0

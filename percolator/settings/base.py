@@ -27,6 +27,18 @@ def get_int_env_var(var_name, default=None):
         )
 
 
+def get_float_env_var(var_name, default=None):
+    var = get_env_var(var_name, default)
+    try:
+        return float(var)
+
+    except ValueError:
+        raise RuntimeError(
+            f'Environment variable {var_name} '
+            f'must be a float or float-convertible string'
+        )
+
+
 def split_env_var(var_name, sep=','):
     var = get_env_var(var_name)
     return [e.strip() for e in var.split(sep)]
@@ -41,4 +53,7 @@ STATIC_DIR = ROOT_DIR / 'static'
 ELASTICSEARCH_HOSTS = split_env_var('ELASTICSEARCH_HOSTS')
 ELASTICSEARCH_INDEX = get_env_var('ELASTICSEARCH_INDEX')
 
-TIKA_URL = get_env_var('TIKA_URL')
+TIKA_HOST = get_env_var('TIKA_HOST')
+TIKA_PORT = get_int_env_var('TIKA_PORT', 9998)
+TIKA_URL = f'http://{TIKA_HOST}:{TIKA_PORT}'
+TIKA_TIMEOUT = get_float_env_var('TIKA_TIMEOUT', 10)
