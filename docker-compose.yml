@@ -43,6 +43,7 @@ services:
 
           access_log /var/log/nginx/access.log main;
           location / {
+            client_max_body_size 50M;
             proxy_pass http://app/;
           }
           location /static {
