@@ -89,7 +89,7 @@ def extract_species_from_file(request: http.Request, es_client: Elasticsearch) -
             verify=False, timeout=settings.TIKA_TIMEOUT
         )
     except requests.exceptions.Timeout:
-        return http.Response({'error': 'text extraction timed out'}, status_code=500)
+        return http.Response('Error: text extraction timed out', status_code=500)
     tika_data = response.json()
     text_content = tika_data[0]['X-TIKA:content'].strip()
     species = get_species(es_client=es_client, content=text_content)
