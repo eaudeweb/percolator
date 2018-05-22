@@ -3,7 +3,7 @@ from .views import *
 
 
 routes = [
-    Route('/tag/domains', method='GET', handler=list_tag_domains),
-    Route('/tag/extract/species/txt', method='POST', handler=extract_species),
-    Route('/tag/extract/species/bin', method='POST', handler=extract_species_from_file),
+    Route('/domains', method='GET', handler=list_tag_domains),
+    Route('/tag', method='POST', handler=extract_from_json),
+    Route('/tag/form', method='POST', handler=extract_from_form),
 ]
