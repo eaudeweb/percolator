@@ -132,16 +132,10 @@ class BaseTagger:
         Args: see `_percolate()`
 
         Returns:
-            A list tags if `constant_score` is on, or a dict of tags and their scores otherwise.
+            A dict of tags and their scores. Note that the score is always `1` if `constant_score` is on.
         """
 
         response = self._percolate(content, min_score, constant_score, offset, limit)
-
-        if constant_score:
-            return [
-                getattr(getattr(hit.query, self.query_type), self.field_name)
-                for hit in response
-            ]
 
         # Only return the matches and scores in hits
         return {
