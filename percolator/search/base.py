@@ -61,6 +61,8 @@ class BaseTagger:
         indexer: A `BaseQueryIndexer`-based instance.
     """
 
+    max_results = 10000  # Don't exceed 10k, this is the ES max window size
+
     def __init__(self, indexer):
         self.indexer = indexer
 
@@ -107,20 +109,19 @@ class BaseTagger:
 
         Returns: the search response object.
         """
+
+        limit = int(limit or self.max_results)
+
         log.info('Fetching tags ...')
         s = self._search_query(content, constant_score)
 
         if min_score is not None and not constant_score:
             s = s.extra(min_score=min_score)
 
-        if offset is not None and limit is not None:
-            offset, limit = int(offset), int(limit)
-            s = s[offset:offset + limit]
-        elif offset is not None:
+        if offset is not None:
             offset = int(offset)
-            s = s[int(offset):]
-        elif limit is not None:
-            limit = int(limit)
+            s = s[offset:offset + limit]
+        else:
             s = s[:limit]
 
         return s.execute()
