@@ -10,7 +10,7 @@ log = logging.getLogger('percolator_search')
 log.setLevel(logging.INFO)
 
 client = connections.create_connection(hosts=settings.ELASTICSEARCH_HOSTS, timeout=20)
-indexer = SpeciesQueryIndexer(client=client, index=settings.ELASTICSEARCH_INDEX)
+indexer = SpeciesQueryIndexer(client=client)
 tagger = BaseTagger(indexer=indexer)
 if len(sys.argv) > 1:
     with open(sys.argv[1], 'r') as f:
