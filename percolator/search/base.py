@@ -15,30 +15,32 @@ class PercolateQuery(Query):
 
 class BaseQueryIndexer:
 
+    index = None
     query_doc_type = DocType
     query_type = 'match'
     field_name = 'content'
 
-    def __init__(self, client, index):
+    def __init__(self, client):
         self.client = client
-        self.index = index
 
     @staticmethod
-    def _read_tags(tags_path):
+    def _read_tags(tags_path, lowercase=True):
         """
         Reads tags from file at the provided path.
         Returns:
-            A set of tag names.
+            A list of tag names.
         """
         log.info(f'Fetching tags from {tags_path}')
         tags = set()
         for line in open(tags_path, 'r').readlines():
-            t = line.strip().lower()
+            t = line.strip()
+            if lowercase:
+                t = t.lower()
             if t:
                 tags.add(t)
 
         log.info(f'Read {len(tags)} unique tags')
-        return tags
+        return list(tags)
 
     def _mk_query_body(self, term):
         """Prepares a query body dict that matches `term`."""
@@ -51,6 +53,9 @@ class BaseQueryIndexer:
         for t in tags:
             query_doc = self.query_doc_type(query=self._mk_query_body(t))
             query_doc.save()
+
+    def count(self):
+        return Search(using=self.client, index=self.index).count()
 
 
 class BaseTagger:

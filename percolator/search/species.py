@@ -17,6 +17,7 @@ class SpeciesQueryDoc(DocType):
 
 class SpeciesQueryIndexer(BaseQueryIndexer):
 
+    index = 'species_percolator'
     query_doc_type = SpeciesQueryDoc
     query_type = 'match_phrase'
     field_name = 'content'
