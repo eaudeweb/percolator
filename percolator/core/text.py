@@ -1,7 +1,11 @@
 from uuid import uuid4
+import tempfile
+import shutil
+import json
+import requests
+
 from percolator.conf import settings
 
-import requests
 
 from .exceptions import TextExtractionError, TextExtractionTimeout
 
@@ -23,12 +27,26 @@ def extract_text(file):
     except requests.exceptions.Timeout:
         raise TextExtractionTimeout
 
-    tika_data = tika_response.json()
     try:
+        tika_data = tika_response.json()
         content = tika_data[0]['X-TIKA:content'].strip()
-    except (IndexError, AttributeError):
+    except (IndexError, AttributeError):  # Tika could not extract any text
         raise TextExtractionError
+    except json.decoder.JSONDecodeError:  # Tika's response was not valid JSON
+        return ''
     except KeyError:  # Tika could not detect any text content
         return ''
 
     return content
+
+
+def extract_text_from_url(url):
+    """
+    Streams the content from an URL into a temporary file, and sends it to Tika
+    for text extraction.
+    """
+    with tempfile.TemporaryFile() as f:
+        with requests.get(url, stream=True) as r:
+            shutil.copyfileobj(r.raw, f)
+        f.seek(0)
+        return extract_text(f)
