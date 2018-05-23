@@ -3,7 +3,6 @@ from apistar.http import Response
 from apistar.exceptions import BadRequest
 from elasticsearch import Elasticsearch
 
-from percolator.conf import settings
 from ..search import TAG_DOMAINS
 from .components import MultiPartForm
 from ..core.types import CoercingType
@@ -11,19 +10,26 @@ from ..core.text import extract_text
 from ..core.exceptions import TextExtractionError, TextExtractionTimeout
 
 
-def list_tag_domains() -> dict:
+def list_tag_domains(es_client: Elasticsearch) -> dict:
     """
     Lists tag domains.
 
     Returns:
         dict mapping domain names to their descriptions.
     """
-    return {k: v.description for k, v in TAG_DOMAINS.items()}
+    domains = TAG_DOMAINS.values()
+    return {
+        d.name: {
+            'description': d.description,
+            'tags_count': d.query_indexer(client=es_client).count()
+        }
+        for d in domains
+    }
 
 
 class DomainValidator(validators.String):
     """Custom string validator for domains"""
-    errors = {'exact': 'Unknown domain'}
+    errors = {'exact': 'Unknown domain', 'enum': f'Unknown domain'}
 
 
 class ExtractionJSONParams(CoercingType):
@@ -31,6 +37,7 @@ class ExtractionJSONParams(CoercingType):
 
     domains = validators.Array(
         items=DomainValidator(enum=list(TAG_DOMAINS.keys())),
+        unique_items=True,
         description='List of domains to search, if not provided ALL domains will be included',
         allow_null=True,
     )
@@ -38,7 +45,7 @@ class ExtractionJSONParams(CoercingType):
         max_length=1024 * 1024 * 10,
         default='',
         allow_null=True,
-        description='Text to be analyzed for species mentions'
+        description='Text to be analyzed for species mentions',
     )
     offset = validators.Integer(
         minimum=0, allow_null=True, description='The paging offset'
@@ -74,9 +81,7 @@ def get_domain_tags(
 ):
     """Fetches tags for a domain"""
     tag_domain = TAG_DOMAINS[domain]
-    indexer = tag_domain.query_indexer(
-        client=es_client, index=settings.ELASTICSEARCH_INDEX
-    )
+    indexer = tag_domain.query_indexer(client=es_client)
     tagger = tag_domain.tagger(indexer=indexer)
     return tagger.get_tags(
         content=content,
@@ -120,11 +125,11 @@ def extract_from_form(form_data: MultiPartForm, es_client: Elasticsearch) -> dic
     except KeyError:
         raise BadRequest({'file': 'Required and not provided'})
 
-    params['domains'] = [
-        d.strip() for d in params.get('domains', '').split(',')
-    ] or None
-    params.pop('content', None)  # Ignore `content`, will be populated from file's text.
+    domains = params.get('domains')
+    if domains is not None:
+        params['domains'] = [d.strip() for d in domains.split(',')]
 
+    params.pop('content', None)  # Ignore `content`, will be populated from file's text.
     try:
         params = ExtractionJSONParams.validate(params, allow_coerce=True)
     except validators.ValidationError as exc:
