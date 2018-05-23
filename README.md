@@ -15,17 +15,18 @@ Prerequisites: Docker, Docker compose
 Checklist:
 
 1. Clone this repository
-2. Edit docker/percolator.env
+2. Copy `docker/percolator.env.example` to `docker/percolator.env` and edit.
 3. Edit docker-compose.override.yml
 4. Review other environment settings like ES_JAVA_OPTS and forwarded ports (see docker-compose.yml)
 5. Run `docker-compose up` and check for errors
 6. Initialize the index (see below)
 
-## Initialize the index
+## Initialize the indices
 
     docker-compose exec app bash
     export PYTHONPATH=`pwd`
-    ./scripts/mk_species_index.py data/species.txt
+    ./scripts/mk_species_index.py data/speciesplus/species.txt
+    ./scripts/mk_country_index.py data/countries/countries.txt data/countries/countries_synonyms.txt
 
 ## Test
 
