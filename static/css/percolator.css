@@ -1,0 +1,73 @@
+html {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+      font-family: "Pacifico", Helvetica, Arial, sans-serif!important;
+}
+
+.flex-grow {
+   flex:1;
+}
+
+@media (min-width: 576px) {
+    .fixed {
+        flex: 0 0 200px;
+        min-height: 100vh;
+    }
+    .col .fluid {
+       min-height: 100vh;
+    }
+}
+
+.corner-ribbon{
+  z-index: 100;
+  width: 200px;
+  background: #e43;
+  position: absolute;
+  top: 25px;
+  left: -50px;
+  text-align: center;
+  line-height: 50px;
+  letter-spacing: 1px;
+  color: #f0f0f0;
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    line-height: 60px;
+}
+
+.footer-link {
+  color: antiquewhite;
+  font-family: Helvetica, Arial, sans-serif!important;
+}
+
+.hidden {
+    display: none;
+}
+
+#btnGroupContentSource {
+    width: 100%;
+}
+
+/* Bootstrap Toggle v2.2.2 corrections for Bootsrtap 4*/
+.toggle-off {
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+}
+.toggle.off {
+    border-color: rgba(0, 0, 0, .25);
+}
+
+.toggle-handle {
+    background-color: white;
+    border: thin rgba(0, 0, 0, .25) solid;
+}

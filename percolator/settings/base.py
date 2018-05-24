@@ -48,6 +48,7 @@ DEBUG = False
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 ROOT_DIR = BASE_DIR.parent
+TEMPLATES_DIR = (BASE_DIR / 'templates').as_posix()  # Jinja can't handle PosixPath objects
 STATIC_DIR = ROOT_DIR / 'static'
 
 ELASTICSEARCH_HOSTS = split_env_var('ELASTICSEARCH_HOSTS')

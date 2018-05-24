@@ -2,9 +2,7 @@ from apistar import App
 
 from .routes import routes
 from .components import (
-    ElasticSearchClientComponent,
-    RequestStreamComponent,
-    MultiPartParserComponent,
+    ElasticSearchClientComponent, RequestStreamComponent, MultiPartParserComponent
 )
 from percolator.conf import settings
 
@@ -14,4 +12,9 @@ components = [
     MultiPartParserComponent(),
 ]
 
-app = App(routes=routes, components=components, static_dir=settings.STATIC_DIR)
+app = App(
+    routes=routes,
+    components=components,
+    static_dir=settings.STATIC_DIR,
+    template_dir=settings.TEMPLATES_DIR,
+)

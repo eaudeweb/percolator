@@ -1,4 +1,4 @@
-from apistar import validators
+from apistar import App, validators
 from apistar.http import Response, QueryParam
 from apistar.exceptions import BadRequest
 from elasticsearch import Elasticsearch
@@ -192,3 +192,11 @@ def extract_from_url(params: URLExtractionJSONParams, es_client: Elasticsearch) 
             limit=params.limit,
         )
     return response
+
+
+def home(app: App):
+    return app.render_template('home.html')
+
+
+def process_form(app: App):
+    return app.render_template('home.html')
