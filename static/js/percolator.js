@@ -42,11 +42,11 @@ function callTextAPI(data) {
 }
 
 
-function makeJSONPayload(domains = '', content, constant_score = true) {
+function makeJSONPayload(domains = '', text, constant_score = true) {
     return {
         'domains': domains,
         'constant_score': constant_score,
-        'content': content
+        'text': text
     }
 }
 
@@ -110,8 +110,8 @@ $(document).ready(function () {
             domains.push($(this).val());
         });
         let constant_score = $('#checkboxScores').is(':checked');
-        let content = $('#textContent').val();
-        let payload = makeJSONPayload(domains, content, constant_score);
+        let text = $('#textContent').val();
+        let payload = makeJSONPayload(domains, text, constant_score);
         $('#speciesplusCard').hide();
         $('#countriesCard').hide();
         let spinner = $('.load-spinner');

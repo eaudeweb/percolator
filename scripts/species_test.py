@@ -14,6 +14,6 @@ indexer = SpeciesQueryIndexer(client=client)
 tagger = BaseTagger(indexer=indexer)
 if len(sys.argv) > 1:
     with open(sys.argv[1], 'r') as f:
-        tags = tagger.get_tags(content=f.read(), constant_score=False)
+        tags = tagger.get_tags(text=f.read(), constant_score=False)
         for tag, score in tags.items():
             print(f'{tag.capitalize():50} {score:>.2f}')

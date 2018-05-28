@@ -63,9 +63,9 @@ class BaseExtractionJSONParams(CoercingType):
     )
 
 
-class RawExtractionJSONParams(BaseExtractionJSONParams):
+class TextExtractionJSONParams(BaseExtractionJSONParams):
     """Validator for raw text content extraction parameters."""
-    content = validators.String(
+    text = validators.String(
         max_length=1024 * 1024 * 10,
         default='',
         allow_null=True,
@@ -85,7 +85,7 @@ class URLExtractionJSONParams(BaseExtractionJSONParams):
 def get_domain_tags(
     domain,
     es_client,
-    content,
+    text,
     min_score=None,
     constant_score=True,
     offset=None,
@@ -96,7 +96,7 @@ def get_domain_tags(
     indexer = tag_domain.query_indexer(client=es_client)
     tagger = tag_domain.tagger(indexer=indexer)
     return tagger.get_tags(
-        content=content,
+        text=text,
         min_score=min_score,
         constant_score=constant_score,
         offset=offset,
@@ -104,9 +104,9 @@ def get_domain_tags(
     )
 
 
-def extract_from_json(params: RawExtractionJSONParams, es_client: Elasticsearch) -> dict:
+def extract_from_text(params: TextExtractionJSONParams, es_client: Elasticsearch) -> dict:
     """Tag extraction endpoint handler, accepts parameters as JSON."""
-    if not params.content:
+    if not params.text:
         raise BadRequest({'content': 'Required and not provided'})
 
     domains = params.domains or TAG_DOMAINS.keys()
@@ -115,7 +115,31 @@ def extract_from_json(params: RawExtractionJSONParams, es_client: Elasticsearch)
         response[domain] = get_domain_tags(
             domain=domain,
             es_client=es_client,
-            content=params.content,
+            text=params.text,
+            min_score=params.min_score,
+            constant_score=bool(params.constant_score),
+            offset=params.offset,
+            limit=params.limit,
+        )
+    return response
+
+
+def extract_from_url(params: URLExtractionJSONParams, es_client: Elasticsearch) -> dict:
+    try:
+        text = extract_text_from_url(params.url)
+    except TextExtractionTimeout:
+        return Response('Text extraction timed out', status_code=500)
+
+    except TextExtractionError:
+        return Response('Text extraction could not be performed', status_code=500)
+
+    domains = params.domains or TAG_DOMAINS.keys()
+    response = {}
+    for domain in domains:
+        response[domain] = get_domain_tags(
+            domain=domain,
+            es_client=es_client,
+            text=text,
             min_score=params.min_score,
             constant_score=bool(params.constant_score),
             offset=params.offset,
@@ -161,31 +185,7 @@ def extract_from_form(form_data: MultiPartForm, es_client: Elasticsearch) -> dic
         response[domain] = get_domain_tags(
             domain=domain,
             es_client=es_client,
-            content=content,
-            min_score=params.min_score,
-            constant_score=bool(params.constant_score),
-            offset=params.offset,
-            limit=params.limit,
-        )
-    return response
-
-
-def extract_from_url(params: URLExtractionJSONParams, es_client: Elasticsearch) -> dict:
-    try:
-        content = extract_text_from_url(params.url)
-    except TextExtractionTimeout:
-        return Response('Text extraction timed out', status_code=500)
-
-    except TextExtractionError:
-        return Response('Text extraction could not be performed', status_code=500)
-
-    domains = params.domains or TAG_DOMAINS.keys()
-    response = {}
-    for domain in domains:
-        response[domain] = get_domain_tags(
-            domain=domain,
-            es_client=es_client,
-            content=content,
+            text=content,
             min_score=params.min_score,
             constant_score=bool(params.constant_score),
             offset=params.offset,

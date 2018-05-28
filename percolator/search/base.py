@@ -87,23 +87,23 @@ class BaseTagger:
     def query_type(self):
         return self.indexer.query_type
 
-    def _search_query(self, content, constant_score=True):
+    def _search_query(self, text, constant_score=True):
         if constant_score:
             return Search(using=self.client, index=self.index).query(
                 'constant_score',
-                filter=Q('percolate', field='query', document={self.field_name: content})
+                filter=Q('percolate', field='query', document={self.field_name: text})
             )
 
         return Search(using=self.client, index=self.index).query(
-            'percolate', field='query', document={self.field_name: content}
+            'percolate', field='query', document={self.field_name: text}
         )
 
-    def _percolate(self, content, min_score=None, constant_score=True, offset=None, limit=None):
+    def _percolate(self, text, min_score=None, constant_score=True, offset=None, limit=None):
         """
-        Percolates the provided content, with score filtering and paging.
+        Percolates the provided text, with score filtering and paging.
 
         Args:
-            content: The text to percolate.
+            text: The text to percolate.
             min_score (float): The minimum search score required. No default is applied when not provided.
                 Ignored when `constant_score` is on.
             constant_score (bool): Apply a `constant_score` wrapper on the search query.
@@ -118,7 +118,7 @@ class BaseTagger:
         limit = int(limit or self.max_results)
 
         log.info('Fetching tags ...')
-        s = self._search_query(content, constant_score)
+        s = self._search_query(text, constant_score)
 
         if min_score is not None and not constant_score:
             s = s.extra(min_score=min_score)
@@ -131,9 +131,9 @@ class BaseTagger:
 
         return s.execute()
 
-    def get_tags(self, content, min_score=None, constant_score=True, offset=None, limit=None):
+    def get_tags(self, text, min_score=None, constant_score=True, offset=None, limit=None):
         """
-        Percolates the provided content, with score filtering and paging.
+        Percolates the provided text, with score filtering and paging.
 
         Args: see `_percolate()`
 
@@ -141,7 +141,7 @@ class BaseTagger:
             A dict of tags and their scores. Note that the score is always `1` if `constant_score` is on.
         """
 
-        response = self._percolate(content, min_score, constant_score, offset, limit)
+        response = self._percolate(text, min_score, constant_score, offset, limit)
 
         # Only return the matches and scores in hits
         return {
