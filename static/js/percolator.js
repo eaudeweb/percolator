@@ -9,8 +9,7 @@ function displayAPIResponse(response, textStatus, jqXHR) {
             }
         }
 
-        resultsList.parent().removeClass('invisible');
-        resultsList.parent().show();
+        resultsList.parent().parent().show();
     };
     console.log(response);
     if (response.hasOwnProperty('speciesplus')) {
@@ -21,9 +20,9 @@ function displayAPIResponse(response, textStatus, jqXHR) {
         updateResultsCard($('#countriesList'), response['countries']);
     }
 
-    $('.load-spinner').on('shown.bs.modal', function (e) {
-        $('.load-spinner').modal('hide');
-    });
+    // $('.load-spinner').on('shown.bs.modal', function (e) {
+    //     $('.load-spinner').modal('hide');
+    // });
 }
 
 
@@ -114,8 +113,8 @@ $(document).ready(function () {
         let payload = makeJSONPayload(domains, text, constant_score);
         $('#speciesplusCard').hide();
         $('#countriesCard').hide();
-        let spinner = $('.load-spinner');
-        spinner.modal('show');
+        // let spinner = $('.load-spinner');
+        // spinner.modal('show');
         callTextAPI(payload);
     });
 
