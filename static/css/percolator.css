@@ -55,6 +55,12 @@ body {
     display: none;
 }
 
+.half-rule {
+    margin-left: 25%;
+    text-align: center;
+    width: 50%;
+ }
+
 #btnGroupContentSource {
     width: 100%;
 }
@@ -71,3 +77,16 @@ body {
     background-color: white;
     border: thin rgba(0, 0, 0, .25) solid;
 }
+
+
+.load-spinner .modal-dialog{
+    display: table;
+    position: relative;
+    margin: 0 auto;
+    top: calc(50% - 24px);
+  }
+
+  .load-spinner .modal-dialog .modal-content{
+    background-color: transparent;
+    border: none;
+  }

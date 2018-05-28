@@ -39,6 +39,17 @@
     <div class="form-group hidden" id="urlInputGroup">
         <input type="url" class="form-control" id="textURL" placeholder="http://example.com/doc.pdf" minlength="10" maxlength="200">
     </div>
-{#  <button type="submit" class="btn btn-primary">Submit</button>#}
-  <button class="btn btn-primary">Submit</button>
 </form>
+<button class="btn btn-primary" id="btnSubmit">Submit</button>
+<hr class="half-rule"/>
+
+{% include "results.html" %}
+
+
+<div class="modal fade load-spinner" data-backdrop="static" data-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content" style="width: 48px">
+            <span class="fa fa-spinner fa-spin fa-3x"></span>
+        </div>
+    </div>
+</div>
