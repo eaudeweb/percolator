@@ -1,38 +1,42 @@
 function displayAPIResponse(response, textStatus, jqXHR) {
 
-    let updateResultsCard = function (resultsList, results) {
+    let updateResultsCard = function (results, list, badge) {
+        let count = Object.keys(results).length;
+        badge.text(count);
         if (jQuery.isEmptyObject(results)) {
-            resultsList.append($("<li class='list-group-item'>").html("<i>No results</i>"));
+            list.append($("<li class='list-group-item'>").html("<i>No results</i>"));
         }
         else {
             for (let key in results) {
                 if (results.hasOwnProperty(key)) {
                     if ($('#checkboxScores').is(':checked')) {
-                        resultsList.append($("<li class='list-group-item d-flex justify-content-between align-items-center'>").html(
+                        list.append($("<li class='list-group-item d-flex justify-content-between align-items-center'>").html(
                             key + "<span class='badge badge-primary badge-pill'>" + results[key].toFixed(2) + "</span>"
                         ));
                     }
                     else {
-                        resultsList.append($("<li class='list-group-item'>").text(key));
+                        list.append($("<li class='list-group-item'>").text(key));
                     }
                 }
             }
         }
-        resultsList.parent().parent().show();
+        list.parent().parent().show();
     };
     console.log(response);
     let speciesplus_list = $('#speciesplusList');
     let countries_list = $('#countriesList');
+    let speciesplus_badge = $('#speciesplusBadge');
+    let countries_badge = $('#countriesBadge');
 
     speciesplus_list.empty();
     countries_list.empty();
 
     if (response.hasOwnProperty('speciesplus')) {
-        updateResultsCard(speciesplus_list, response['speciesplus']);
+        updateResultsCard(response['speciesplus'], speciesplus_list, speciesplus_badge);
     }
 
     if (response.hasOwnProperty('countries')) {
-        updateResultsCard(countries_list, response['countries']);
+        updateResultsCard(response['countries'], countries_list, countries_badge);
     }
 
     $('.load-spinner').modal('hide');
