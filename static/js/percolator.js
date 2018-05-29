@@ -33,13 +33,15 @@ function displayAPIResponse(response, textStatus, jqXHR) {
 
 $(document).ready(function () {
 
-    $('#textContent').keyup(function () {
+    $('#textSource').keyup(function () {
         let max_text = 3000;
         let text_size = $(this).val().length;
         if (text_size === 0) {
             $('#textContentHelp').html(max_text + ' characters');
+            $('#btnSubmit').attr('disabled', true);
         } else {
             $('#textContentHelp').html(text_size + '/' + max_text + ' characters');
+            $('#btnSubmit').attr('disabled', false);
         }
     });
 
@@ -50,9 +52,11 @@ $(document).ready(function () {
             $('#lblSourceFile').addClass('btn-secondary').removeClass('btn-primary');
             $('#lblSourceURL').addClass('btn-secondary').removeClass('btn-primary');
 
+            $('#textSource').val('');
             $('#textInputGroup').show();
             $('#fileInputGroup').hide();
             $('#urlInputGroup').hide();
+            $('#btnSubmit').attr('disabled', true);
         }
     });
     $('#optionSourceFile').change(function () {
@@ -61,9 +65,14 @@ $(document).ready(function () {
             $('#lblSourceFile').addClass('btn-primary').removeClass('btn-secondary');
             $('#lblSourceURL').addClass('btn-secondary').removeClass('btn-primary');
 
+            let inputFile = $('#fileSource');
+            inputFile.val('');
+            inputFile.next('.custom-file-label').text('Choose file');
+
             $('#textInputGroup').hide();
             $('#fileInputGroup').show();
             $('#urlInputGroup').hide();
+            $('#btnSubmit').attr('disabled', true);
         }
     });
     $('#optionSourceURL').change(function () {
@@ -72,16 +81,35 @@ $(document).ready(function () {
             $('#lblSourceFile').addClass('btn-secondary').removeClass('btn-primary');
             $('#lblSourceURL').addClass('btn-primary').removeClass('btn-secondary');
 
+            $('#urlSource').val('');
             $('#textInputGroup').hide();
             $('#fileInputGroup').hide();
             $('#urlInputGroup').show();
+            $('#btnSubmit').attr('disabled', true);
         }
     });
 
-    $('#inputGroupFile').on('change', function () {
+    $('#fileSource').on('change', function () {
         let fileName = $(this).val();
         $(this).next('.custom-file-label').html(fileName);
+        if (fileName.length === 0) {
+            $('#btnSubmit').attr('disabled', true);
+        }
+        else {
+            $('#btnSubmit').attr('disabled', false);
+        }
     });
+
+    $('#urlSource').keyup(function () {
+        if ($(this).val().length === 0) {
+            $('#btnSubmit').attr('disabled', true);
+        }
+        else {
+            $('#btnSubmit').attr('disabled', false);
+        }
+    });
+
+
 
     $('#formTag').submit(function(e) {
       e.preventDefault();
