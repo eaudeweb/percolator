@@ -172,7 +172,6 @@ def extract_from_form(form_data: MultiPartForm, es_client: Elasticsearch) -> dic
         try:
             params = TextExtractionJSONParams.validate(params, allow_coerce=True)
         except validators.ValidationError as exc:
-            print('bad text params')
             raise BadRequest(exc.detail)
         return extract_from_text(params, es_client)
     elif source == 'url':

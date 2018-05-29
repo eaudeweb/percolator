@@ -89,7 +89,7 @@ $(document).ready(function () {
     $('#formTag').submit(function(e) {
       e.preventDefault();
       let domains = $('#selectDomains option:selected').map(function(){ return this.value }).get();
-      $('#domains').value = domains.join(',');
+      $('#hiddenDomains').val(domains.join(','));
       let form_data = new FormData($(this)[0]);
       let url = $(this).attr('action');
       $('#speciesplusCard').hide();
