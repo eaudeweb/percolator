@@ -166,12 +166,7 @@ def extract_from_form(form_data: MultiPartForm, es_client: Elasticsearch) -> dic
     except KeyError:
         raise BadRequest({'source': 'Required and not provided'})
 
-    try:
-        params['constant_score'] = params.pop('constant_score') == 'on'
-    except KeyError:
-        params['constant_score'] = True
-
-    print(params)
+    params['constant_score'] = False
 
     if source == 'text':
         try:
@@ -213,7 +208,7 @@ def extract_from_form(form_data: MultiPartForm, es_client: Elasticsearch) -> dic
             es_client=es_client,
             text=text,
             min_score=params.min_score,
-            constant_score=bool(params.constant_score),
+            constant_score=params.constant_score,
             offset=params.offset,
             limit=params.limit,
         )

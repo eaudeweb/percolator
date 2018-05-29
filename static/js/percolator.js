@@ -4,7 +4,14 @@ function displayAPIResponse(response, textStatus, jqXHR) {
         resultsList.empty();
         for (let key in results) {
             if (results.hasOwnProperty(key)) {
-                resultsList.append($("<li class='list-group-item'>").text(key));
+                if ($('#checkboxScores').is(':checked')) {
+                    resultsList.append($("<li class='list-group-item d-flex justify-content-between align-items-center'>").html(
+                        key + "<span class='badge badge-primary badge-pill'>" + results[key].toFixed(2) + "</span>"
+                    ));
+                }
+                else {
+                    resultsList.append($("<li class='list-group-item'>").text(key));
+                }
                 console.log(key + " -> " + results[key]);
             }
         }
