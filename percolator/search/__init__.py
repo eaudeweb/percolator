@@ -1,6 +1,6 @@
 import attr
 from .base import BaseTagger, BaseQueryIndexer
-from .species import SpeciesQueryIndexer
+from .species import SpeciesQueryIndexer, SpeciesTagger
 from .countries import CountryTagger, CountryQueryIndexer
 
 
@@ -29,7 +29,7 @@ _domains = [
     Domain(
         name='speciesplus',
         query_indexer=SpeciesQueryIndexer,
-        tagger=BaseTagger,
+        tagger=SpeciesTagger,
         description='Species listed in the Appendices of CITES and CMS, as well as other CMS Family '
                     'listings and species included in the Annexes to the EU Wildlife Trade Regulations.'
     ),

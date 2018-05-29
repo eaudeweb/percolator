@@ -1,7 +1,7 @@
 import logging
 from elasticsearch_dsl import (Index, DocType, Text, Percolator, token_filter, analyzer)
 
-from .base import BaseQueryIndexer
+from .base import BaseQueryIndexer, BaseTagger
 
 log = logging.getLogger('percolator_search')
 
@@ -113,3 +113,10 @@ class SpeciesQueryIndexer(BaseQueryIndexer):
         for s in species:
             query_doc = self.query_doc_type(query=self._mk_query_body(s))
             query_doc.save()
+
+
+class SpeciesTagger(BaseTagger):
+    def get_tags(self, *args, **kwargs):
+        tags = super().get_tags(*args, **kwargs)
+        tags = {k.capitalize(): v for k, v in tags.items()}
+        return tags
