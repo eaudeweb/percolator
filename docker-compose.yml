@@ -24,7 +24,7 @@ services:
     env_file:
       - ./docker/percolator.env
     volumes:
-      - static-files:/var/local/percolator/static
+      - static-files:/var/local/percolator/static_files
     depends_on:
       - elasticsearch
       - tika

@@ -1,8 +1,11 @@
 #!/bin/sh
 
+mkdir static_files
+cp -r static/* static_files
+
 # Copy apistar package static files
-mkdir -p static/apistar
-cp -r /usr/local/lib/python3.6/site-packages/apistar/static/* static/apistar
+mkdir static_files/apistar
+cp -r /usr/local/lib/python3.6/site-packages/apistar/static/* static_files/apistar
 
 case "$1" in
     build_index)
