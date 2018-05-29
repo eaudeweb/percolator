@@ -167,6 +167,7 @@ def extract_from_form(form_data: MultiPartForm, es_client: Elasticsearch) -> dic
         raise BadRequest({'source': 'Required and not provided'})
 
     params['constant_score'] = False
+    params['limit'] = 10000
 
     if source == 'text':
         try:
