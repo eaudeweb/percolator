@@ -35,12 +35,11 @@ $(document).ready(function () {
 
     $('#textContent').keyup(function () {
         let max_text = 3000;
-        let text_length = $(this).val().length;
-        let text_remaining = max_text - text_length;
-        if (text_remaining === max_text) {
+        let text_size = $(this).val().length;
+        if (text_size === 0) {
             $('#textContentHelp').html(max_text + ' characters');
         } else {
-            $('#textContentHelp').html(text_remaining + '/' + max_text + ' characters');
+            $('#textContentHelp').html(text_size + '/' + max_text + ' characters');
         }
     });
 
