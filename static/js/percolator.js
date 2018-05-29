@@ -1,6 +1,6 @@
 function displayAPIResponse(response, textStatus, jqXHR) {
 
-    let updateResultsCard = function(resultsList, results) {
+    let updateResultsCard = function (resultsList, results) {
         resultsList.empty();
         for (let key in results) {
             if (results.hasOwnProperty(key)) {
@@ -23,30 +23,6 @@ function displayAPIResponse(response, textStatus, jqXHR) {
     // $('.load-spinner').on('shown.bs.modal', function (e) {
     //     $('.load-spinner').modal('hide');
     // });
-}
-
-
-function callTextAPI(data) {
-    $.ajax({
-        url: '/tag',
-        type: 'POST',
-        contentType: 'application/json',
-        dataType: 'json',
-        data: JSON.stringify(data),
-        success: displayAPIResponse,
-        error: function () {
-            alert('error');
-        }
-    });
-}
-
-
-function makeJSONPayload(domains = '', text, constant_score = true) {
-    return {
-        'domains': domains,
-        'constant_score': constant_score,
-        'text': text
-    }
 }
 
 
@@ -98,24 +74,29 @@ $(document).ready(function () {
         }
     });
 
-    $('#inputGroupFile').on('change',function(){
+    $('#inputGroupFile').on('change', function () {
         let fileName = $(this).val();
         $(this).next('.custom-file-label').html(fileName);
     });
 
-    $('#btnSubmit').click(function () {
-        let domains = [];
-        $("#selectDomains :selected").each(function () {
-            domains.push($(this).val());
-        });
-        let constant_score = $('#checkboxScores').is(':checked');
-        let text = $('#textContent').val();
-        let payload = makeJSONPayload(domains, text, constant_score);
-        $('#speciesplusCard').hide();
-        $('#countriesCard').hide();
-        // let spinner = $('.load-spinner');
-        // spinner.modal('show');
-        callTextAPI(payload);
+    $('#formTag').submit(function(e) {
+      e.preventDefault();
+      let domains = $('#selectDomains option:selected').map(function(){ return this.value }).get();
+      $('#domains').value = domains.join(',');
+      let form_data = new FormData($(this)[0]);
+      let url = $(this).attr('action');
+      $('#speciesplusCard').hide();
+      $('#countriesCard').hide();
+      // let spinner = $('.load-spinner');
+      // spinner.modal('show');
+      $.ajax({
+          type:'POST',
+          url: url,
+          processData: false,
+          contentType: false,
+          cache: false,
+          data : form_data,
+          success: displayAPIResponse
+      });
     });
-
 });
