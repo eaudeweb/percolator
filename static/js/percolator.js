@@ -1,30 +1,38 @@
 function displayAPIResponse(response, textStatus, jqXHR) {
 
     let updateResultsCard = function (resultsList, results) {
-        resultsList.empty();
-        for (let key in results) {
-            if (results.hasOwnProperty(key)) {
-                if ($('#checkboxScores').is(':checked')) {
-                    resultsList.append($("<li class='list-group-item d-flex justify-content-between align-items-center'>").html(
-                        key + "<span class='badge badge-primary badge-pill'>" + results[key].toFixed(2) + "</span>"
-                    ));
+        if (jQuery.isEmptyObject(results)) {
+            resultsList.append($("<li class='list-group-item'>").html("<i>No results</i>"));
+        }
+        else {
+            for (let key in results) {
+                if (results.hasOwnProperty(key)) {
+                    if ($('#checkboxScores').is(':checked')) {
+                        resultsList.append($("<li class='list-group-item d-flex justify-content-between align-items-center'>").html(
+                            key + "<span class='badge badge-primary badge-pill'>" + results[key].toFixed(2) + "</span>"
+                        ));
+                    }
+                    else {
+                        resultsList.append($("<li class='list-group-item'>").text(key));
+                    }
                 }
-                else {
-                    resultsList.append($("<li class='list-group-item'>").text(key));
-                }
-                // console.log(key + " -> " + results[key]);
             }
         }
-
         resultsList.parent().parent().show();
     };
-    // console.log(response);
+    console.log(response);
+    let speciesplus_list = $('#speciesplusList');
+    let countries_list = $('#countriesList');
+
+    speciesplus_list.empty();
+    countries_list.empty();
+
     if (response.hasOwnProperty('speciesplus')) {
-        updateResultsCard($('#speciesplusList'), response['speciesplus']);
+        updateResultsCard(speciesplus_list, response['speciesplus']);
     }
 
     if (response.hasOwnProperty('countries')) {
-        updateResultsCard($('#countriesList'), response['countries']);
+        updateResultsCard(countries_list, response['countries']);
     }
 
     $('.load-spinner').modal('hide');
