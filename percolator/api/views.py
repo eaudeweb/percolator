@@ -151,28 +151,54 @@ def extract_from_url(params: URLExtractionJSONParams, es_client: Elasticsearch) 
 def extract_from_form(form_data: MultiPartForm, es_client: Elasticsearch) -> dict:
     """
     Tag extraction endpoint handler, accepting a multi-part form.
-
-    Form fields must conform to `ExtractionJSONParams` attributes, plus a `file` field.
     """
     params = dict(form_data)  # Convert from ImmutableDict
     params = {k: v[0] for k, v in params.items()}  # Strip array wrappers from fields
+
+    domains = params.get('domains')
+    if domains:
+        params['domains'] = [d.strip() for d in domains.split(',')]
+    else:
+        params['domains'] = []
+
+    try:
+        source = params.pop('source')
+    except KeyError:
+        raise BadRequest({'source': 'Required and not provided'})
+
+    try:
+        params['constant_score'] = params.pop('constant_score') == 'on'
+    except KeyError:
+        params['constant_score'] = True
+
+    print(params)
+
+    if source == 'text':
+        try:
+            params = TextExtractionJSONParams.validate(params, allow_coerce=True)
+        except validators.ValidationError as exc:
+            print('bad text params')
+            raise BadRequest(exc.detail)
+        return extract_from_text(params, es_client)
+    elif source == 'url':
+        try:
+            params = URLExtractionJSONParams.validate(params, allow_coerce=True)
+        except validators.ValidationError as exc:
+            raise BadRequest(exc.detail)
+        return extract_from_url(params, es_client)
+
     try:
         file = params.pop('file')
     except KeyError:
         raise BadRequest({'file': 'Required and not provided'})
 
-    domains = params.get('domains')
-    if domains is not None:
-        params['domains'] = [d.strip() for d in domains.split(',')]
-
-    params.pop('content', None)  # Ignore `content`, will be populated from file's text.
     try:
         params = BaseExtractionJSONParams.validate(params, allow_coerce=True)
     except validators.ValidationError as exc:
         raise BadRequest(exc.detail)
 
     try:
-        content = extract_text(file.stream)
+        text = extract_text(file.stream)
     except TextExtractionTimeout:
         return Response('Text extraction timed out', status_code=500)
 
@@ -185,7 +211,7 @@ def extract_from_form(form_data: MultiPartForm, es_client: Elasticsearch) -> dic
         response[domain] = get_domain_tags(
             domain=domain,
             es_client=es_client,
-            text=content,
+            text=text,
             min_score=params.min_score,
             constant_score=bool(params.constant_score),
             offset=params.offset,
@@ -195,8 +221,4 @@ def extract_from_form(form_data: MultiPartForm, es_client: Elasticsearch) -> dic
 
 
 def home(app: App):
-    return app.render_template('home.html')
-
-
-def process_form(app: App):
     return app.render_template('home.html')
