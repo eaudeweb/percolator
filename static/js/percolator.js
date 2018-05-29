@@ -12,13 +12,13 @@ function displayAPIResponse(response, textStatus, jqXHR) {
                 else {
                     resultsList.append($("<li class='list-group-item'>").text(key));
                 }
-                console.log(key + " -> " + results[key]);
+                // console.log(key + " -> " + results[key]);
             }
         }
 
         resultsList.parent().parent().show();
     };
-    console.log(response);
+    // console.log(response);
     if (response.hasOwnProperty('speciesplus')) {
         updateResultsCard($('#speciesplusList'), response['speciesplus']);
     }
@@ -27,9 +27,7 @@ function displayAPIResponse(response, textStatus, jqXHR) {
         updateResultsCard($('#countriesList'), response['countries']);
     }
 
-    // $('.load-spinner').on('shown.bs.modal', function (e) {
-    //     $('.load-spinner').modal('hide');
-    // });
+    $('.load-spinner').modal('hide');
 }
 
 
@@ -94,8 +92,7 @@ $(document).ready(function () {
       let url = $(this).attr('action');
       $('#speciesplusCard').hide();
       $('#countriesCard').hide();
-      // let spinner = $('.load-spinner');
-      // spinner.modal('show');
+      $('.load-spinner').modal('show');
       $.ajax({
           type:'POST',
           url: url,
