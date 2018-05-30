@@ -14,18 +14,21 @@
     </div>
     <div class="form-group">
         <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons" id="btnGroupContentSource">
-            <label class="btn btn-primary active w-100" id="lblSourceText">
-                <input type="radio" name="source" id="optionSourceText" value="text" autocomplete="off" checked> Text
+            <label class="btn btn-primary active w-100" id="lblSourceURL">
+                <input type="radio" name="source" id="optionSourceURL" value="url" autocomplete="off" checked> URL
+            </label>
+            <label class="btn btn-secondary w-100" id="lblSourceText">
+                <input type="radio" name="source" id="optionSourceText" value="text" autocomplete="off"> Text
             </label>
             <label class="btn btn-secondary w-100" id="lblSourceFile">
                 <input type="radio" name="source" id="optionSourceFile" value="file" autocomplete="off"> File
             </label>
-            <label class="btn btn-secondary w-100" id="lblSourceURL">
-                <input type="radio" name="source" id="optionSourceURL" value="url" autocomplete="off"> URL
-            </label>
         </div>
     </div>
-    <div class="form-group" id="textInputGroup">
+    <div class="form-group" id="urlInputGroup">
+        <input type="url" name="url" class="form-control" id="urlSource" placeholder="http://example.com/doc.pdf" minlength="10" maxlength="200">
+    </div>
+    <div class="form-group hidden" id="textInputGroup">
         <textarea class="form-control" name="text" id="textSource" rows="5" aria-describedby="textContentHelp" placeholder="Enter text"></textarea>
         <small id="textContentHelp" class="form-text text-muted">3000 characters</small>
     </div>
@@ -36,9 +39,6 @@
                 <label class="custom-file-label" for="inputGroupFile">Choose file</label>
             </div>
         </div>
-    </div>
-    <div class="form-group hidden" id="urlInputGroup">
-        <input type="url" name="url" class="form-control" id="urlSource" placeholder="http://example.com/doc.pdf" minlength="10" maxlength="200">
     </div>
     <input class="btn btn-primary" id="btnSubmit" type="submit" value="Submit" disabled>
 </form>
