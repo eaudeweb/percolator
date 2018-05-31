@@ -1,6 +1,8 @@
 import logging
+import csv
 from elasticsearch_dsl import DocType, Search, Index, Q
 from elasticsearch_dsl.query import Query
+from elasticsearch.helpers import bulk
 
 log = logging.getLogger('percolator_search')
 
@@ -91,14 +93,16 @@ class BaseTagger:
         if constant_score:
             return Search(using=self.client, index=self.index).query(
                 'constant_score',
-                filter=Q('percolate', field='query', document={self.field_name: text})
+                filter=Q('percolate', field='query', document={self.field_name: text}),
             )
 
         return Search(using=self.client, index=self.index).query(
             'percolate', field='query', document={self.field_name: text}
         )
 
-    def _percolate(self, text, min_score=None, constant_score=True, offset=None, limit=None):
+    def _percolate(
+        self, text, min_score=None, constant_score=True, offset=None, limit=None
+    ):
         """
         Percolates the provided text, with score filtering and paging.
 
@@ -131,7 +135,9 @@ class BaseTagger:
 
         return s.execute()
 
-    def get_tags(self, text, min_score=None, constant_score=True, offset=None, limit=None):
+    def get_tags(
+        self, text, min_score=None, constant_score=True, offset=None, limit=None
+    ):
         """
         Percolates the provided text, with score filtering and paging.
 
@@ -145,6 +151,87 @@ class BaseTagger:
 
         # Only return the matches and scores in hits
         return {
-            getattr(getattr(hit.query, self.query_type), self.field_name): hit.meta.score
+            getattr(
+                getattr(hit.query, self.query_type), self.field_name
+            ): hit.meta.score
             for hit in response
         }
+
+
+class BaseTaxonIndexer:
+
+    index = None
+    doc_type = DocType
+    query_type = 'match'
+    field_names = []
+    normalize_field_names = []
+    autophrase_field_names = []
+
+    def __init__(self, client):
+        self.client = client
+
+    @staticmethod
+    def _normalize(term):
+        return term.lower().replace('"', '')
+
+    def _autophrase(self, term, normalize_first=True):
+        if normalize_first:
+            term = self._normalize(term)
+        return '_'.join(term.split())
+
+    def _read_taxa(self, taxa_path, delimiter=';'):
+        """
+        Generator of taxa processed from the CSV file at the provided path.
+        """
+        log.info(f'Fetching taxa from {taxa_path}')
+        with open(taxa_path, 'r') as csv_file:
+            reader = csv.DictReader(
+                csv_file, fieldnames=self.field_names, delimiter=delimiter
+            )
+            for row in reader:
+                taxon = {}
+                for field_name, value in row.items():
+                    if field_name in self.autophrase_field_names:
+                        value = self._autophrase(value)
+                    elif field_name in self.normalize_field_names:
+                        value = self._normalize(value)
+                    taxon[field_name] = value
+                yield taxon
+
+    def index_taxa(self, taxa_path):
+        """Bulk-indexes the taxa"""
+        index = Index(self.index)
+        index.doc_type(self.doc_type)
+
+        log.info('(Re)Creating index')
+        index.delete(ignore=404)
+        index.create()
+
+        actions = (
+            {'_index': self.index, '_type': self.doc_type._doc_type.name, '_source': t}
+            for t in self._read_taxa(taxa_path)
+        )
+
+        log.info('Indexing taxa')
+        bulk(self.client, actions)
+        log.info(f'Indexed {self.count()} taxa')
+
+    def count(self):
+        return Search(using=self.client, index=self.index).count()
+
+    def _search_query(self, **terms):
+        return Search(using=self.client, index=self.index).query(
+            self.query_type, **terms
+        )
+
+    def search(self, **terms):
+        query = self._search_query(**terms)
+        results = query.execute()
+        return [hit.to_dict() for hit in results]
+
+    def first(self, **terms):
+        matches = self.search(**terms)
+        if not matches:
+            return None
+
+        return matches[0]

@@ -1,7 +1,11 @@
 import logging
 from elasticsearch_dsl import (Index, DocType, Text, Percolator, token_filter, analyzer)
 
-from .base import BaseQueryIndexer, BaseTagger
+from .base import (
+    BaseQueryIndexer,
+    BaseTagger,
+    BaseTaxonIndexer,
+)
 
 log = logging.getLogger('percolator_search')
 
@@ -120,3 +124,50 @@ class SpeciesTagger(BaseTagger):
         tags = super().get_tags(*args, **kwargs)
         tags = {k.capitalize(): v for k, v in tags.items()}
         return tags
+
+
+class SpeciesTaxonDoc(DocType):
+    """Document type for species taxa"""
+
+    kingdom = Text()
+    phylum = Text()
+    klass = Text()
+    order = Text()
+    family = Text()
+    genus = Text()
+    species = Text()
+    subspecies = Text()
+    scientific_name = Text()
+    author = Text()
+
+    class Meta:
+        doc_type = '_doc'
+
+
+class SpeciesTaxonIndexer(BaseTaxonIndexer):
+    index = 'species_taxa'
+    doc_type = SpeciesTaxonDoc
+    query_type = 'term'
+    field_names = (
+        'kingdom',
+        'phylum',
+        'klass',
+        'order',
+        'family',
+        'genus',
+        'species',
+        'subspecies',
+        'scientific_name',
+        'author'
+    )
+    normalize_field_names = (
+        'kingdom',
+        'phylum',
+        'klass',
+        'order',
+        'family',
+        'genus',
+        'species',
+        'subspecies',
+    )
+    autophrase_field_names = ('scientific_name',)
