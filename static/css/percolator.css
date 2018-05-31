@@ -90,3 +90,11 @@ body {
     background-color: transparent;
     border: none;
 }
+
+a.tag-link {
+    cursor: pointer;
+}
+
+.tooltip {
+    text-transform:capitalize;
+}

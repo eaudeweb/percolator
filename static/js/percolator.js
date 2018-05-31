@@ -1,6 +1,6 @@
 function displayAPIResponse(response, textStatus, jqXHR) {
 
-    let updateResultsCard = function (results, list, badge) {
+    let updateResultsCard = function (results, list, badge, domain=null, field=null) {
         let count = Object.keys(results).length;
         badge.text(count);
         if (jQuery.isEmptyObject(results)) {
@@ -9,13 +9,21 @@ function displayAPIResponse(response, textStatus, jqXHR) {
         else {
             for (let key in results) {
                 if (results.hasOwnProperty(key)) {
+                    let tag = key;
                     if ($('#checkboxScores').is(':checked')) {
+                        if (!(domain == null) && !(field == null)) {
+                            tag = "<a class='tag-link' data-toggle='tooltip'" + `domain="${domain}" field="${field}"` + ">" + key + "</a>";
+                        }
                         list.append($("<li class='list-group-item d-flex justify-content-between align-items-center'>").html(
-                            key + "<span class='badge badge-primary badge-pill'>" + results[key].toFixed(2) + "</span>"
+                            tag +
+                            "<span class='badge badge-primary badge-pill'>" + results[key].toFixed(2) + "</span>"
                         ));
                     }
                     else {
-                        list.append($("<li class='list-group-item'>").text(key));
+                        if (!(domain == null) && !(field == null)) {
+                            tag = "<a class='tag-link' data-toggle='tooltip'" + `domain="${domain}" field="${field}"` + ">" + key + "</a>";
+                        }
+                        list.append($("<li class='list-group-item'>").html(tag));
                     }
                 }
             }
@@ -32,12 +40,39 @@ function displayAPIResponse(response, textStatus, jqXHR) {
     countries_list.empty();
 
     if (response.hasOwnProperty('speciesplus')) {
-        updateResultsCard(response['speciesplus'], speciesplus_list, speciesplus_badge);
+        updateResultsCard(response['speciesplus'], speciesplus_list, speciesplus_badge, 'speciesplus', 'scientific_name');
     }
 
     if (response.hasOwnProperty('countries')) {
         updateResultsCard(response['countries'], countries_list, countries_badge);
     }
+
+    $('.tag-link').on('click', function(e) {
+        e.preventDefault();
+        let domain = $(this).attr('domain');
+        let field = $(this).attr('field');
+        let params = {'domain': domain};
+        params[field] = $(this).text();
+        let el = this;
+        $.ajax({
+            type:'GET',
+            url: '/taxa',
+            data: params,
+            success: function(response,  textStatus, jqXHR) {
+                let tooltip = JSON.stringify(response);
+                if (domain === 'speciesplus') {
+                    tooltip = `${response['kingdom']} > ` +
+                        `${response['phylum']} > ` +
+                        `${response['order']} > ` +
+                        `${response['family']} > ` +
+                        `${response['genus']}`;
+                }
+                $(el).attr('title', tooltip).tooltip('show');
+                $(el).trigger('mouseover');
+            }
+        });
+        return false;
+    });
 
     $('.load-spinner').modal('hide');
 }
@@ -120,8 +155,6 @@ $(document).ready(function () {
             $('#btnSubmit').attr('disabled', false);
         }
     });
-
-
 
     $('#formTag').submit(function(e) {
       e.preventDefault();
