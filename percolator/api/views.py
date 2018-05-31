@@ -1,6 +1,6 @@
 from apistar import App, validators
-from apistar.http import Response, QueryParam
-from apistar.exceptions import BadRequest
+from apistar.http import Response, QueryParam, QueryParams
+from apistar.exceptions import BadRequest, NotFound
 from elasticsearch import Elasticsearch
 
 from ..search import TAG_DOMAINS
@@ -102,6 +102,12 @@ def get_domain_tags(
         offset=offset,
         limit=limit,
     )
+
+
+def _get_taxon_details(domain, es_client, **terms):
+    tag_domain = TAG_DOMAINS[domain]
+    indexer = tag_domain.taxon_indexer(client=es_client)
+    return indexer.first(**terms)
 
 
 def extract_from_text(params: TextExtractionJSONParams, es_client: Elasticsearch) -> dict:
@@ -213,6 +219,15 @@ def extract_from_form(form_data: MultiPartForm, es_client: Elasticsearch) -> dic
             limit=params.limit,
         )
     return response
+
+
+def get_taxon_details(params: QueryParams, es_client: Elasticsearch) -> dict:
+    terms = dict(params)
+    domain = terms.pop('domain')
+    details = _get_taxon_details(domain, es_client, **terms)
+    if details is None:
+        raise NotFound
+    return details
 
 
 def home(app: App):

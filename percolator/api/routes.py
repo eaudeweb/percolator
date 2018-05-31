@@ -8,4 +8,5 @@ routes = [
     Route('/tag', method='POST', handler=extract_from_text),
     Route('/tag/url', method='POST', handler=extract_from_url),
     Route('/tag/form', method='POST', handler=extract_from_form),
+    Route('/taxa', method='GET', handler=get_taxon_details),
 ]

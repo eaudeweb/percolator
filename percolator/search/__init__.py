@@ -1,6 +1,6 @@
 import attr
-from .base import BaseTagger, BaseQueryIndexer
-from .species import SpeciesQueryIndexer, SpeciesTagger
+from .base import BaseTagger, BaseQueryIndexer, BaseTaxonIndexer
+from .species import SpeciesQueryIndexer, SpeciesTagger, SpeciesTaxonIndexer
 from .countries import CountryTagger, CountryQueryIndexer
 
 
@@ -13,6 +13,10 @@ def is_query_indexer(instance, attribute, value):
     _validate_ancestor(attribute, value, BaseQueryIndexer)
 
 
+def is_taxon_indexer(instance, attribute, value):
+    _validate_ancestor(attribute, value, BaseTaxonIndexer)
+
+
 def is_tagger(instance, attribute, value):
     _validate_ancestor(attribute, value, BaseTagger)
 
@@ -21,6 +25,7 @@ def is_tagger(instance, attribute, value):
 class Domain:
     name = attr.ib(validator=attr.validators.instance_of(str))
     query_indexer = attr.ib(validator=is_query_indexer)
+    taxon_indexer = attr.ib(validator=attr.validators.optional(validator=is_taxon_indexer))
     tagger = attr.ib(validator=is_tagger)
     description = attr.ib(validator=attr.validators.instance_of(str))
 
@@ -29,6 +34,7 @@ _domains = [
     Domain(
         name='speciesplus',
         query_indexer=SpeciesQueryIndexer,
+        taxon_indexer=SpeciesTaxonIndexer,
         tagger=SpeciesTagger,
         description='Species listed in the Appendices of CITES and CMS, as well as other CMS Family '
                     'listings and species included in the Annexes to the EU Wildlife Trade Regulations.'
@@ -36,6 +42,7 @@ _domains = [
     Domain(
         name='countries',
         query_indexer=CountryQueryIndexer,
+        taxon_indexer=None,
         tagger=CountryTagger,
         description='Countries'
     ),
