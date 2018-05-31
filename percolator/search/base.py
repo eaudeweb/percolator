@@ -220,8 +220,15 @@ class BaseTaxonIndexer:
         return Search(using=self.client, index=self.index).count()
 
     def _search_query(self, **terms):
+        search_terms = {}
+        for field_name, value in terms.items():
+            if field_name in self.autophrase_field_names:
+                value = self._autophrase(value)
+            elif field_name in self.normalize_field_names:
+                value = self._normalize(value)
+            search_terms[field_name] = value
         return Search(using=self.client, index=self.index).query(
-            self.query_type, **terms
+            self.query_type, **search_terms
         )
 
     def search(self, **terms):
